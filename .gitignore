@@ -1,0 +1,11 @@
+# CLion project files
+.idea/
+cmake-build-*/
+
+# Compiled files
+*.o
+*.obj
+*.exe
+
+# Random
+.DS_Store
