@@ -6,11 +6,11 @@ int main() {
     std::cout << "Hello, and Welcome to the bank." << std::endl;
     std::cout << "-------------------------------" << std::endl;
     std::cout << std::endl;
-    int acc_num, inp;
+    int acc_num, inp = 0;
     std::cout << "Please Enter the account Number: ";
     std::cin >> acc_num;
-
-    while (true) {
+    
+    while (inp != -1) {
 
     }
     return 0;
