@@ -5,11 +5,6 @@
 #include <sqlite3.h>
 #include <vector>
 
-
-void init_db(sqlite3 *db);
-void create_account();
-int switch_account(int acc_num);
-void change_account_details(int acc_num);
 struct transaction {
     bool ttype;
     unsigned tid;
@@ -18,19 +13,20 @@ struct transaction {
     time_t ttime;
 };
 
-class account {
-    public:
-        account();
-        void print_acc_details();
-        void print_transaction_history(int no = 5);
-        void withdraw();
-        void deposit();
-        ~account();
-    private:
-        int acc_num;
-        int balance;
-        std::string name;
-        std::vector<transaction> transactions;
+struct account {
+    int acc_num;
+    int balance;
+    std::string name;
 };
+
+void init_db(sqlite3 *db);
+void reset_db(sqlite3 *db);
+void create_account();
+int switch_account(int acc_num);
+void change_account_details(int acc_num);
+void print_acc_details();
+void print_transaction_history(int no);
+void withdraw();
+void deposit();
 
 #endif //ACCOUNT_H
