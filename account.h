@@ -7,8 +7,8 @@
 
 struct transaction {
     bool ttype;
-    unsigned tid;
-    unsigned tamount;
+    unsigned int tid;
+    unsigned int tamount;
     int acc_sent;
     time_t ttime;
 };
@@ -22,6 +22,7 @@ struct account {
 void init_db(sqlite3 *db);
 void reset_db(sqlite3 *db);
 void create_account();
+void delete_account(int acc_num);
 int switch_account(int acc_num);
 void change_account_details(int acc_num);
 void print_acc_details();
