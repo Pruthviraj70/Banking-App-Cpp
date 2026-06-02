@@ -17,6 +17,7 @@ struct account {
     int acc_num;
     int balance;
     std::string name;
+    std::string password;
 };
 
 void init_db(sqlite3 *db);

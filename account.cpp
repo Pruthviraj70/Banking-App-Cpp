@@ -29,6 +29,7 @@ int callback(void* data, int argc, char** argv, char** colName){
         account->acc_num = argv[0] - "0";
         account->name = argv[1];
         account->balance = argv[2] - "0";
+        account->password = argv[3];
         return 0;
     }
 
@@ -115,11 +116,18 @@ struct account* switch_account(sqlite3 *db) {
     std::cout << "Enter the account number(Enter 0 to create new account): ";
     std::cin >> acc_num;
     if (acc_num) {
+        std::string acc_password;
+        std::cout << "Please enter the password of the account: ";
+        std::getline(std::cin,acc_password);
+        acc_password = sha256(acc_password);
         struct account *current_account = new account();
-        std::string command = "SELECT acc_num, name, balance FROM accounts WHERE acc_num = " + std::to_string(acc_num) + ";";
+        std::string command = "SELECT acc_num, name, balance, password FROM accounts WHERE acc_num = " + std::to_string(acc_num) + ";";
 
         sqlite3_exec(db, command.c_str(), callback, current_account, nullptr);
-        return current_account;
+        if (acc_password == current_account->password) {
+            return current_account;
+        }
+        return switch_account(db);
     }
     else {
         struct account *new_account = create_account(db);
@@ -128,7 +136,10 @@ struct account* switch_account(sqlite3 *db) {
 }
 
 void print_acc_details(sqlite3 *db, struct account *accountd) {
-
+    std::cout << "Account details." << std::endl;
+    std::cout << "Account Number: " << accountd->acc_num << std::endl;
+    std::cout << "Account Name: " << accountd->name << std::endl;
+    std::cout << "Account Balance: " << accountd->balance << std::endl;
 }
 
 void print_transaction_history(sqlite3 *db, struct account *accountd, int no) {
