@@ -79,10 +79,16 @@ struct account* create_account(sqlite3 *db) {
     sqlite3_finalize(stmt);
 
     sqlite3_exec(db, "SELECT acc_num, name, balance FROM accounts WHERE acc_num = (SELECT MAX(acc_num) FROM accounts);", callback, new_account, nullptr);
+    std::cout << "Account created." << std::endl;
     std::cout << new_account->acc_num << " is your account number." << std::endl;
 
-    std::string createtable = "CREATE TABLE IF NOT EXISTS " + std::to_string(new_account->acc_num) + "_transactions(tid INTEGER PRIMARY KEY, ttype INT, tammount INT, acc_sent INT, ttime TEXT);" ;
-    sqlite3_exec(db, createtable.c_str(), nullptr, nullptr, nullptr);
+    sqlite3_reset(stmt);
+
+    std::string createtable = "CREATE TABLE IF NOT EXISTS ?_transactions(tid INTEGER PRIMARY KEY, ttype INT, tammount INT, acc_sent INT, ttime TEXT);";
+    sqlite3_prepare_v2(db, createtable.c_str(), -1, &stmt, nullptr);
+    sqlite3_bind_int(stmt, 1, new_account->acc_num);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
 
     return new_account;
 }
@@ -93,20 +99,32 @@ void delete_account(sqlite3 *db, struct account *accountd) {
     sqlite3_bind_int(stmt, 1, accountd->acc_num);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+
+    std::string deletetable = "DROP TABLE IF EXISTS ?_transactions;";
+    sqlite3_prepare_v2(db, deletetable.c_str(), -1, &stmt, nullptr);
+    sqlite3_bind_int(stmt, 1, accountd->acc_num);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
     std::cout << "Deleted Account." << std::endl;
     switch_account(db);
 }
 
 struct account* switch_account(sqlite3 *db) {
     int acc_num;
-    std::cout << "Enter the account number: ";
+    std::cout << "Enter the account number(Enter 0 to create new account): ";
     std::cin >> acc_num;
+    if (acc_num) {
+        struct account *current_account = new account();
+        std::string command = "SELECT acc_num, name, balance FROM accounts WHERE acc_num = " + std::to_string(acc_num) + ";";
 
-    struct account *current_account = new account();
-    std::string command = "SELECT acc_num, name, balance FROM accounts WHERE acc_num = " + std::to_string(acc_num) + ";";
-
-    sqlite3_exec(db, command.c_str(), callback, current_account, nullptr);
-    return current_account;
+        sqlite3_exec(db, command.c_str(), callback, current_account, nullptr);
+        return current_account;
+    }
+    else {
+        struct account *new_account = create_account(db);
+        return new_account;
+    }
 }
 
 void print_acc_details(sqlite3 *db, struct account *accountd) {
