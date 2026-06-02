@@ -40,6 +40,18 @@ int callback(void* data, int argc, char** argv, char** colName){
     return 0;
 }
 
+int print_callback(void* data, int argc, char** argv, char** colName) {
+    for (int i = 0; i < argc; i++){
+        std::cout
+            << colName[i]
+            << ": "
+            << argv[i]
+            << '\n';
+    }
+
+    return 0;
+}
+
 void init_db(sqlite3 *db) {
     const fs::path dbPath = fs::path(std::getenv("HOME")) / "Library/Application Support/bankingSystem/bankData.db";
     if (!fs::exists(fs::path("~/Library/Application Support/bankingSystem"))) {
@@ -130,8 +142,7 @@ struct account* switch_account(sqlite3 *db) {
         return switch_account(db);
     }
     else {
-        struct account *new_account = create_account(db);
-        return new_account;
+        return create_account(db);
     }
 }
 
@@ -142,7 +153,7 @@ void print_acc_details(sqlite3 *db, struct account *accountd) {
     std::cout << "Account Balance: " << accountd->balance << std::endl;
 }
 
-void print_transaction_history(sqlite3 *db, struct account *accountd, int no) {
+void print_transaction_history(sqlite3 *db, struct account *accountd) {
 
 }
 
