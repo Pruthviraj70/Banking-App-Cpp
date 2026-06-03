@@ -179,8 +179,9 @@ void withdraw(sqlite3 *db, struct account *accountd) {
         sqlite3_finalize(stmt);
 
         sqlite3_prepare_v2(db, "INSERT INTO &_transactions(ttype, tammount) VALUES (?, ?)", -1, &stmt, nullptr);
-        sqlite3_bind_text(stmt, 1, "Withdraw", -1, nullptr);
-        sqlite3_bind_int(stmt, 2, ammount);
+        sqlite3_bind_int(stmt, 1, accountd->acc_num);
+        sqlite3_bind_text(stmt, 2, "Withdraw", -1, nullptr);
+        sqlite3_bind_int(stmt, 3, ammount);
         sqlite3_step(stmt);
         sqlite3_finalize(stmt);
     }
@@ -190,5 +191,20 @@ void withdraw(sqlite3 *db, struct account *accountd) {
 }
 
 void deposit(sqlite3 *db, struct account *accountd) {
+    int ammount;
+    std::cout << "Enter the deposite ammount: ";
+    std::cin >> ammount;
+    if (ammount < 0) {
+        std::cout << "Invalid ammount." << std::endl;
+        return;
+    }
+    sqlite3_stmt* stmt;
+    sqlite3_prepare_v2(db, "INSERT INTO &_transactions(ttype, tammount) VALUES (?, ?)", -1, &stmt, nullptr);
+    sqlite3_bind_int(stmt, 1, accountd->acc_num);
+    sqlite3_bind_text(stmt, 2, "Deposit", -1, nullptr);
+    sqlite3_bind_int(stmt, 3, ammount);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
 
+    accountd->balance += ammount;
 }
