@@ -111,7 +111,7 @@ struct account* create_account(sqlite3 *db) {
     return new_account;
 }
 
-void delete_account(sqlite3 *db, struct account *accountd) {
+struct account* delete_account(sqlite3 *db, struct account *accountd) {
     sqlite3_stmt* stmt;
     sqlite3_prepare_v2(db, "DELETE FROM accounts WHERE acc_num = ?", -1, &stmt, nullptr);
     sqlite3_bind_int(stmt, 1, accountd->acc_num);
@@ -125,7 +125,7 @@ void delete_account(sqlite3 *db, struct account *accountd) {
     sqlite3_finalize(stmt);
 
     std::cout << "Deleted Account." << std::endl;
-    switch_account(db);
+    return switch_account(db);
 }
 
 struct account* switch_account(sqlite3 *db) {
