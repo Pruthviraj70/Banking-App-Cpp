@@ -85,7 +85,7 @@ struct account* create_account(sqlite3 *db) {
     sqlite3_stmt* stmt;
 
     sqlite3_prepare_v2(db, "INSERT INTO accounts(name, password, balance) VALUES (?, ?, ?)", -1, &stmt, nullptr);
-    sqlite3_bind_text(stmt, 1, (new_account->name).c_str(), -1, nullptr);
+    sqlite3_bind_text(stmt, 1, new_account->name.c_str(), -1, nullptr);
     sqlite3_bind_text(stmt, 2, temp_password.c_str(), -1, nullptr);
     sqlite3_bind_int(stmt, 3, new_account->balance);
     sqlite3_step(stmt);
@@ -94,12 +94,17 @@ struct account* create_account(sqlite3 *db) {
     sqlite3_exec(db, "SELECT acc_num, name, balance FROM accounts WHERE acc_num = (SELECT MAX(acc_num) FROM accounts);", callback, new_account, nullptr);
     std::cout << "Account created." << std::endl;
     std::cout << new_account->acc_num << " is your account number." << std::endl;
+    std::cout << "Current balance is " << new_account->balance <<std::endl;
 
-    sqlite3_reset(stmt);
-
-    std::string createtable = "CREATE TABLE IF NOT EXISTS ?_transactions(tid INTEGER PRIMARY KEY, ttype INT, tammount INT, acc_sent INT, ttime TEXT);";
+    std::string createtable = "CREATE TABLE IF NOT EXISTS ?_transactions(tid INTEGER PRIMARY KEY, ttype TEXT, tammount INT, acc_sent INT, ttime TEXT DEFAULT CURRENT_TIMESTAMP);";
     sqlite3_prepare_v2(db, createtable.c_str(), -1, &stmt, nullptr);
     sqlite3_bind_int(stmt, 1, new_account->acc_num);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    sqlite3_prepare_v2(db, "INSERT INTO &_transactions(ttype, tammount) VALUES (?, ?)", -1, &stmt, nullptr);
+    sqlite3_bind_text(stmt, 1, "Initial Deposit", -1, nullptr);
+    sqlite3_bind_int(stmt, 2, new_account->balance);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
@@ -154,11 +159,34 @@ void print_acc_details(sqlite3 *db, struct account *accountd) {
 }
 
 void print_transaction_history(sqlite3 *db, struct account *accountd) {
-
+    std::string command = "SELECT * FROM " + std::to_string(accountd->acc_num) + "_transactions;";
+    sqlite3_exec(db, command.c_str(), print_callback, nullptr, nullptr);
 }
 
 void withdraw(sqlite3 *db, struct account *accountd) {
+    int ammount, acc_sent;
+    std::cout << "Enter the amount to withdraw: ";
+    std::cin >> ammount;
+    sqlite3_stmt* stmt;
 
+    if (ammount > accountd->balance && ammount > 0) {
+        accountd->balance -= ammount;
+
+        sqlite3_prepare_v2(db, "UPDATE accounts SET balance = ? WHERE acc_num = ?;", -1, &stmt, nullptr);
+        sqlite3_bind_int(stmt, 1, accountd->balance);
+        sqlite3_bind_int(stmt, 2, accountd->acc_num);
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+
+        sqlite3_prepare_v2(db, "INSERT INTO &_transactions(ttype, tammount) VALUES (?, ?)", -1, &stmt, nullptr);
+        sqlite3_bind_text(stmt, 1, "Withdraw", -1, nullptr);
+        sqlite3_bind_int(stmt, 2, ammount);
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+    }
+    else {
+        std::cout << "Entered invalid ammount." << std::endl;
+    }
 }
 
 void deposit(sqlite3 *db, struct account *accountd) {
