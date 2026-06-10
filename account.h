@@ -1,7 +1,10 @@
 #ifndef ACCOUNT_H
 #define ACCOUNT_H
+
 #include <string>
-#include <sqlite3.h>
+extern "C" {
+    #include "sqlite3.h"
+}
 
 struct account {
     int acc_num;
@@ -13,7 +16,7 @@ struct account {
 int callback(void* data, int argc, char** argv, char** colName);
 int print_callback(void* data, int argc, char** argv, char** colName);
 
-void init_db(sqlite3 *db);
+void init_db(sqlite3 **db);
 void reset_db(sqlite3 *db);
 struct account* create_account(sqlite3 *db);
 struct account* delete_account(sqlite3 *db, struct account *accountd);
